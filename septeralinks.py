@@ -11,16 +11,22 @@ terabox_domains = [
     "1024terabox.com",
     "terabox.co",
     "terabox.me",
-    "teraboxlink.com"  # Added missing comma
+    "teraboxlink.com"
 ]
 
-# Compile a regex pattern to match only the URLs without trailing HTML tags or extra characters
+# Compile a regex pattern to match only the URLs
 terabox_pattern = re.compile(
-    r'https?://(?:www\.)?(?:' + '|'.join(re.escape(domain) for domain in terabox_domains) + r')[^\s"\']*'
+    r'https?://(?:www\.)?(?:' + '|'.join(re.escape(domain) for domain in terabox_domains) + r')[^\s\'"<>]*'
 )
 
-# Initialize an empty set to store unique links
+# Initialize a set to store unique links
 terabox_links = set()
+
+# Load existing links from the output file into the set
+if os.path.exists(output_file):
+    with open(output_file, "r", encoding="utf-8") as file:
+        existing_links = file.read().splitlines()
+        terabox_links.update(existing_links)
 
 # Iterate over all files in the html folder
 for filename in os.listdir(html_folder):
@@ -33,8 +39,8 @@ for filename in os.listdir(html_folder):
             # Add the found links to the set (to ensure uniqueness)
             terabox_links.update(links)
 
-# Write the collected links to the output file
-with open(output_file, "a", encoding="utf-8") as file:
+# Write the collected links to the output file, ensuring no duplicates
+with open(output_file, "w", encoding="utf-8") as file:
     for link in sorted(terabox_links):
         file.write(link + "\n")
 
