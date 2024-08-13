@@ -6,7 +6,7 @@ from collections import defaultdict
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Define the directory and file paths
-source_folder = os.path.join(script_dir, "source_folder")  # Ensure the folder name is correct
+source_folder = os.path.join(script_dir, "source_folder")
 output_file = os.path.join(script_dir, "links.txt")
 archived_file = os.path.join(script_dir, "links_archived.txt")
 
@@ -15,14 +15,16 @@ print(f"Script Directory: {script_dir}")
 print(f"Source Folder Path: {source_folder}")
 print(f"Output File Path: {output_file}")
 print(f"Archived File Path: {archived_file}")
+print()
 
-# Define the list of Terabox domains
+# Define the list of Terabox domains, including the new domain
 terabox_domains = [
     "terabox.com",
     "1024terabox.com",
     "terabox.co",
     "terabox.me",
-    "teraboxlink.com"
+    "teraboxlink.com",
+    "teraboxlinks.com"  # New domain added
 ]
 
 # Compile a regex pattern to match only the URLs
@@ -30,10 +32,10 @@ terabox_pattern = re.compile(
     r'https?://(?:www\.)?(?:' + '|'.join(re.escape(domain) for domain in terabox_domains) + r')[^\s\'"<>]*'
 )
 
-# Initialize sets to store links
+# Initialize sets and dictionaries to store links
 terabox_links = set()
-terabox_links_from_sources = set()
 link_occurrences = defaultdict(int)
+file_details = []
 
 # Load existing links from the output file into a set
 existing_links = set()
@@ -63,20 +65,23 @@ for filename in os.listdir(source_folder):
         file_path = os.path.join(source_folder, filename)
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
+
             # Find all links in the file content
             links = re.findall(r'https?://[^\s\'"<>]+', content)
-            total_links_found += len(links)
+            links_count = len(links)
+            total_links_found += links_count
             
             # Filter Terabox links
             terabox_links_in_file = set(terabox_pattern.findall(content))
-            total_terabox_links += len(terabox_links_in_file)
+            terabox_count = len(terabox_links_in_file)
+            total_terabox_links += terabox_count
             
             # Count occurrences and duplicates
             for link in terabox_links_in_file:
                 link_occurrences[link] += 1
             
-            # Update the set of Terabox links found in sources
-            terabox_links_from_sources.update(terabox_links_in_file)
+            # Track file details
+            file_details.append(f"{filename}, {links_count}, {terabox_count}")
             
             # Add unique Terabox links to the set
             terabox_links.update(terabox_links_in_file)
@@ -100,7 +105,11 @@ with open(output_file, "a", encoding="utf-8") as file:
 # Calculate the number of new links added
 new_links_count = len(terabox_links)
 
-# Print the statistics
+# Print the file details and statistics
+for detail in file_details:
+    print(detail)
+
+print()
 print(f"Total links found in source files: {total_links_found}")
 print(f"Total Terabox links found: {total_terabox_links}")
 print()
