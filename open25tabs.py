@@ -1,6 +1,7 @@
 import pyautogui
 import time
 import pyperclip
+import keyboard  # Import the keyboard module
 
 pyautogui.FAILSAFE = False  # Disable the fail-safe
 
@@ -9,8 +10,8 @@ def process_links():
     with open('links.txt', 'r') as file:
         lines = file.readlines()
 
-    # Perform the actions for the first 15 lines
-    for i in range(15):
+    # Perform the actions for the first 15 lines or fewer if there aren't enough lines
+    for i in range(min(15, len(lines))):
         print(f"Pasting line {i+1}: {lines[i].strip()}")
         pyautogui.hotkey('ctrl', 'l')
         time.sleep(0.2)  # Adding a small delay
@@ -38,16 +39,20 @@ def process_links():
     # Print a message indicating completion of deletion
     print("Deleted the first 15 lines from links.txt")
 
-while True:
-    # Print a message and give 3 seconds to prepare
-    print("Waiting for 3 seconds...")
-    time.sleep(3)
+def main_loop():
+    while True:
+        # Wait for the user to press "Enter" anywhere on the system
+        print("Waiting for 'Enter' key press...")
+        keyboard.wait('enter')
 
-    # Process the first 15 links
-    process_links()
+        # Process the first 15 links
+        process_links()
 
-    # Wait for the user to press "Enter" to continue or type "exit" to stop
-    user_input = input('Press "Enter" to continue or type "exit" to stop: ')
-    if user_input.lower() == 'exit':
-        print("Exiting the program...")
-        break
+        # Check if the user wants to exit
+        user_input = input('Press "Enter" to continue or type "exit" to stop: ')
+        if user_input.lower() == 'exit':
+            print("Exiting the program...")
+            break
+
+if __name__ == "__main__":
+    main_loop()
