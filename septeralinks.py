@@ -2,10 +2,19 @@ import os
 import re
 from collections import defaultdict
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Define the directory and file paths
-html_folder = "html"
-output_file = "links.txt"
-archived_file = "links_archived.txt"
+source_folder = os.path.join(script_dir, "source_folder")  # Ensure the folder name is correct
+output_file = os.path.join(script_dir, "links.txt")
+archived_file = os.path.join(script_dir, "links_archived.txt")
+
+# Debugging: Print paths to verify correctness
+print(f"Script Directory: {script_dir}")
+print(f"Source Folder Path: {source_folder}")
+print(f"Output File Path: {output_file}")
+print(f"Archived File Path: {archived_file}")
 
 # Define the list of Terabox domains
 terabox_domains = [
@@ -23,7 +32,7 @@ terabox_pattern = re.compile(
 
 # Initialize sets to store links
 terabox_links = set()
-terabox_links_from_html = set()
+terabox_links_from_sources = set()
 link_occurrences = defaultdict(int)
 
 # Load existing links from the output file into a set
@@ -43,10 +52,15 @@ total_links_found = 0
 total_terabox_links = 0
 total_duplicates = 0
 
-# Iterate over all files in the html folder
-for filename in os.listdir(html_folder):
-    if filename.endswith(".html"):
-        file_path = os.path.join(html_folder, filename)
+# Check if source folder exists
+if not os.path.isdir(source_folder):
+    print(f"Error: The folder '{source_folder}' does not exist.")
+    exit()
+
+# Iterate over all files in the source folder
+for filename in os.listdir(source_folder):
+    if filename.endswith(".html") or filename.endswith(".txt"):
+        file_path = os.path.join(source_folder, filename)
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
             # Find all links in the file content
@@ -61,8 +75,8 @@ for filename in os.listdir(html_folder):
             for link in terabox_links_in_file:
                 link_occurrences[link] += 1
             
-            # Update the set of Terabox links found in HTML
-            terabox_links_from_html.update(terabox_links_in_file)
+            # Update the set of Terabox links found in sources
+            terabox_links_from_sources.update(terabox_links_in_file)
             
             # Add unique Terabox links to the set
             terabox_links.update(terabox_links_in_file)
@@ -87,17 +101,14 @@ with open(output_file, "a", encoding="utf-8") as file:
 new_links_count = len(terabox_links)
 
 # Print the statistics
-print(f"Total links found in HTML files: {total_links_found}")
+print(f"Total links found in source files: {total_links_found}")
 print(f"Total Terabox links found: {total_terabox_links}")
 print()
-print(f"Total duplicated links within HTML files: {total_duplicates}")
+print(f"Total duplicated links within source files: {total_duplicates}")
 print(f"Existing Terabox links in links.txt: {existing_in_output}")
 print(f"Existing Terabox links in links_archived.txt: {existing_in_archived}")
 print()
 print(f"New links added to links.txt: {new_links_count}")
-
-# Optionally print all Terabox links from HTML files for debugging
-# print(f"Terabox links found in HTML files (before deduplication):\n{terabox_links_from_html}")
 
 # Keep the terminal open until the user presses Enter
 input("Press Enter to exit...")
