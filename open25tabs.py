@@ -1,35 +1,49 @@
 import pyautogui
 import time
 import pyperclip
-import keyboard  # Import the keyboard module
+import os
+import keyboard
 
 pyautogui.FAILSAFE = False  # Disable the fail-safe
 
-# Function to process and paste links
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Change the working directory to the script's directory
+os.chdir(script_dir)
+
+print(f"Current working directory: {os.getcwd()}")
+
+# Function to process and paste links from a given list of lines
+def paste_links(lines):
+    for i, line in enumerate(lines):
+        print(f"Pasting line {i+1}: {line.strip()}")
+        pyautogui.hotkey('ctrl', 'l')  # Focus on the address bar
+        time.sleep(0.2)
+        pyperclip.copy(line.strip())  # Copy the line to clipboard
+        pyautogui.hotkey('ctrl', 'v')  # Paste the line
+        time.sleep(0.2)
+        pyautogui.press('enter')  # Press Enter after pasting
+        time.sleep(0.2)
+        pyautogui.hotkey('ctrl', 't')  # Open a new tab
+        time.sleep(0.2)
+
+# Function to process and paste links from links.txt
 def process_links():
     with open('links.txt', 'r') as file:
         lines = file.readlines()
 
     # Perform the actions for the first 15 lines or fewer if there aren't enough lines
-    for i in range(min(15, len(lines))):
-        print(f"Pasting line {i+1}: {lines[i].strip()}")
-        pyautogui.hotkey('ctrl', 'l')
-        time.sleep(0.2)  # Adding a small delay
-        pyperclip.copy(lines[i].strip())  # Copy the line to clipboard
-        pyautogui.hotkey('ctrl', 'v')  # Paste the line
-        time.sleep(0.3)  # Adding a small delay
-        pyautogui.press('enter')  # Press Enter after pasting
-        time.sleep(0.2)  # Adding a small delay
-        pyautogui.hotkey('ctrl', 't')
-        time.sleep(0.2)  # Adding a small delay
+    lines_to_paste = lines[:15]
+    paste_links(lines_to_paste)
 
     # Append the first 15 lines to links_archived.txt
     with open('links_archived.txt', 'a') as archived_file:
-        archived_file.writelines(lines[:15])
+        archived_file.writelines(lines_to_paste)
 
     # Print the archived lines
     print("Archived the following lines:")
-    for line in lines[:15]:
+    for line in lines_to_paste:
         print(line.strip())
 
     # Remove the first 15 lines from links.txt
@@ -39,20 +53,72 @@ def process_links():
     # Print a message indicating completion of deletion
     print("Deleted the first 15 lines from links.txt")
 
+# Function to process and paste the last 15 links from links_archived.txt
+def process_archived_links():
+    with open('links_archived.txt', 'r') as file:
+        lines = file.readlines()
+
+    # Perform the actions for the last 15 lines or fewer if there aren't enough lines
+    lines_to_paste = lines[-15:]
+    paste_links(lines_to_paste)
+
+    # Print a message indicating completion
+    print("Pasted the last 15 lines from links_archived.txt")
+
+# Function to modify and replace the domain of URLs in open tabs
+def modify_and_replace_domain():
+    # Activate the first tab
+    pyautogui.hotkey('ctrl', '1')  # Switch to the first tab
+    time.sleep(0.2)  # Ensure tab switch is complete
+    
+    for _ in range(15):  # Loop for 15 tabs
+        pyautogui.hotkey('ctrl', 'l')  # Focus on the address bar
+        time.sleep(0.2)
+        pyautogui.hotkey('ctrl', 'c')  # Copy the current URL
+        time.sleep(0.2)
+
+        current_url = pyperclip.paste()  # Get the copied URL
+        print(f"Original URL: {current_url}")
+        
+        # Replace the domain with terabox.com
+        modified_url = current_url.split("//")[-1].split("/", 1)
+        if len(modified_url) > 1:
+            modified_url = "https://terabox.com/" + modified_url[1]
+        else:
+            modified_url = "https://terabox.com/"
+
+        print(f"Modified URL: {modified_url}")
+        pyperclip.copy(modified_url)  # Copy the modified URL to clipboard
+        pyautogui.hotkey('ctrl', 'v')  # Paste the modified URL
+        pyautogui.press('enter')  # Press Enter to navigate to the modified URL
+        time.sleep(0.5)  # Added a delay for the URL to load
+
+        if _ < 14:  # Ensure the next tab switch only happens if there are more tabs
+            pyautogui.hotkey('ctrl', 'pagedown')  # Move to the next tab
+            time.sleep(0.5)  # Added a delay to ensure the tab switch completes
+
 def main_loop():
+    print("Press 'Enter' to paste the first 15 links from 'links.txt' into open tabs.")
+    print("Press 'Ctrl + Enter' to paste the last 15 links from 'links_archived.txt' into open tabs.")
+    print("Press 'Shift + Enter' to modify the domain of the current URLs in open tabs to 'terabox.com' and move to the next tab.")
+
     while True:
-        # Wait for the user to press "Enter" anywhere on the system
-        print("Waiting for 'Enter' key press...")
-        keyboard.wait('enter')
-
-        # Process the first 15 links
-        process_links()
-
-        # Check if the user wants to exit
-        user_input = input('Press "Enter" to continue or type "exit" to stop: ')
-        if user_input.lower() == 'exit':
-            print("Exiting the program...")
-            break
+        # Block until either "Enter" or "Ctrl + Enter" or "Shift + Enter" is pressed
+        if keyboard.is_pressed('ctrl') and keyboard.is_pressed('enter'):
+            print("Ctrl + Enter detected")
+            process_archived_links()
+            while keyboard.is_pressed('ctrl') or keyboard.is_pressed('enter'):
+                time.sleep(0.1)  # Wait for keys to be released
+        elif keyboard.is_pressed('shift') and keyboard.is_pressed('enter'):
+            print("Shift + Enter detected")
+            modify_and_replace_domain()
+            while keyboard.is_pressed('shift') or keyboard.is_pressed('enter'):
+                time.sleep(0.1)  # Wait for keys to be released
+        elif keyboard.is_pressed('enter'):
+            print("Enter detected")
+            process_links()
+            while keyboard.is_pressed('enter'):
+                time.sleep(0.1)  # Wait for Enter to be released
 
 if __name__ == "__main__":
     main_loop()
