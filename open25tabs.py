@@ -98,27 +98,27 @@ def modify_and_replace_domain():
             time.sleep(0.5)  # Added a delay to ensure the tab switch completes
 
 def main_loop():
-    print("Press 'Enter' to paste the first 15 links from 'links.txt' into open tabs.")
-    print("Press 'Ctrl + Enter' to paste the last 15 links from 'links_archived.txt' into open tabs.")
-    print("Press 'Shift + Enter' to modify the domain of the current URLs in open tabs to 'terabox.com' and move to the next tab.")
+    print("Press 'Space' to paste the first 15 links from 'links.txt' into open tabs.")
+    print("Press '1' to paste the last 15 links from 'links_archived.txt' into open tabs.")
+    print("Press '2' to modify the domain of the current URLs in open tabs to 'terabox.com' and move to the next tab.")
 
     while True:
-        # Block until either "Enter" or "Ctrl + Enter" or "Shift + Enter" is pressed
-        if keyboard.is_pressed('ctrl') and keyboard.is_pressed('enter'):
-            print("Ctrl + Enter detected")
+        # Block until either "Space" or "1" or "2" is pressed
+        if keyboard.is_pressed('1'):
+            print("1 detected")
             process_archived_links()
-            while keyboard.is_pressed('ctrl') or keyboard.is_pressed('enter'):
-                time.sleep(0.1)  # Wait for keys to be released
-        elif keyboard.is_pressed('shift') and keyboard.is_pressed('enter'):
-            print("Shift + Enter detected")
+            while keyboard.is_pressed('1'):
+                time.sleep(0.1)  # Wait for key to be released
+        elif keyboard.is_pressed('2'):
+            print("2 detected")
             modify_and_replace_domain()
-            while keyboard.is_pressed('shift') or keyboard.is_pressed('enter'):
-                time.sleep(0.1)  # Wait for keys to be released
-        elif keyboard.is_pressed('enter'):
-            print("Enter detected")
+            while keyboard.is_pressed('2'):
+                time.sleep(0.1)  # Wait for key to be released
+        elif keyboard.is_pressed('space'):
+            print("Space detected")
             process_links()
-            while keyboard.is_pressed('enter'):
-                time.sleep(0.1)  # Wait for Enter to be released
+            while keyboard.is_pressed('space'):
+                time.sleep(0.1)  # Wait for Space to be released
 
 if __name__ == "__main__":
     main_loop()
