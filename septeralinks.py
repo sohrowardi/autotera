@@ -17,24 +17,9 @@ print(f"Output File Path: {output_file}")
 print(f"Archived File Path: {archived_file}")
 print()
 
-# Define the list of Terabox domains, including the new domains
-terabox_domains = [
-    "terabox.com",
-    "1024terabox.com",
-    "terabox.co",
-    "terabox.me",
-    "teraboxlink.com",
-    "teraboxlinks.com",
-    "teraboxapp.com",
-    "teraboxshare.com",
-    "freeterabox.com",
-    "1024tera.com.co",
-    "teraboxshortlink.com"
-]
-
-# Compile a regex pattern to match only the URLs
+# Compile a regex pattern to match domains containing "tera"
 terabox_pattern = re.compile(
-    r'https?://(?:www\.)?(?:' + '|'.join(re.escape(domain) for domain in terabox_domains) + r')[^\s\'"<>]*'
+    r'https?://(?:www\.)?[^/\s\'"<>]*tera[^/\s\'"<>]*[^\s\'"<>]*'
 )
 
 # Initialize sets and dictionaries to store links
